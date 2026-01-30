@@ -1,5 +1,17 @@
 # Project Notes
 
+## Build and Run Commands
+
+Start the emulator:
+```bash
+~/Android/Sdk/emulator/emulator -avd Small_Phone &
+```
+
+Build, install, and launch the app:
+```bash
+JAVA_HOME=/opt/android-studio/jbr ANDROID_HOME=~/Android/Sdk ./gradlew installDebug && ~/Android/Sdk/platform-tools/adb shell am start -n com.example.helloworld/.MainActivity
+```
+
 ## Environment Setup
 
 - **JAVA_HOME:** `/opt/android-studio/jbr`
