@@ -18,34 +18,46 @@ class GreetingTest {
 
     @Test
     fun greeting_displaysNameCorrectly() {
+        // Given nothing
+
+        // When
         composeTestRule.setContent {
             HelloWorldTheme {
                 Greeting(name = "Android")
             }
         }
 
+        // Then
         composeTestRule.onNodeWithText("Hello Android!").assertIsDisplayed()
     }
 
     @Test
     fun greeting_withDifferentName_displaysCorrectly() {
+        // Given nothing
+
+        // When
         composeTestRule.setContent {
             HelloWorldTheme {
                 Greeting(name = "Test")
             }
         }
 
+        // Then
         composeTestRule.onNodeWithText("Hello Test!").assertIsDisplayed()
     }
 
     @Test
     fun greeting_withEmptyName_displaysCorrectly() {
+        // Given nothing
+
+        // When
         composeTestRule.setContent {
             HelloWorldTheme {
                 Greeting(name = "")
             }
         }
 
+        // Then
         composeTestRule.onNodeWithText("Hello !").assertIsDisplayed()
     }
 }
