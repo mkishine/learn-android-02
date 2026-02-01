@@ -30,6 +30,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Generates a greeting message for the given name.
+ */
+fun greetingText(name: String): String {
+    return "Hello $name!"
+}
+
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Box(
@@ -37,7 +44,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Hello $name!",
+            text = greetingText(name),
             style = MaterialTheme.typography.headlineLarge
         )
     }
