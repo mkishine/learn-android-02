@@ -37,3 +37,24 @@ Launch a specific AVD:
 This tells the emulator program (`emulator`) to launch the virtual device configuration named `Small_Phone`.
 
 You can have multiple AVDs (e.g., `Small_Phone`, `Medium_Phone`, `Tablet`) and use the same emulator binary to run any of them.
+
+## Check if an AVD is Running
+
+Use `adb devices` to see connected emulators and devices:
+```bash
+~/Android/Sdk/platform-tools/adb devices
+```
+
+Example output when an emulator is running:
+```
+List of devices attached
+emulator-5554	device
+```
+
+| Status         | Meaning                                         |
+|----------------|-------------------------------------------------|
+| `device`       | Running and ready to use                        |
+| `offline`      | Not responding (may be booting)                 |
+| `unauthorized` | USB debugging not authorized on physical device |
+
+If multiple emulators are running, they appear as `emulator-5554`, `emulator-5556`, etc.
