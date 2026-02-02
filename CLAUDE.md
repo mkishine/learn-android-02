@@ -19,6 +19,9 @@
   }
   ```
 
+### Testing Practice
+- After fixing a test class, run the test to verify it passes before considering the task complete
+
 ## Build and Run Commands
 
 Start the emulator:
