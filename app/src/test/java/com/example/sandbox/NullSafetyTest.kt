@@ -26,6 +26,9 @@ import org.junit.Test
  * | `letWithSafeCall`                    | `?.let {}` executes block only if not null        |
  * | `nullableCollectionElements`         | Collections can contain nullable elements         |
  * | `filterNotNullOnCollections`         | `filterNotNull()` removes nulls from collections  |
+ * | `safeCastOperator`                   | `as?` returns null instead of throwing on failed cast |
+ * | `lateinitModifier`                   | `lateinit` defers initialization of non-null var  |
+ * | `isNullOrEmptyAndIsNullOrBlank`      | Null-safe string checks                           |
  */
 @Suppress("RedundantNullableReturnType", "KotlinConstantConditions", "RedundantExplicitType",
     "IfThenToElvis"
@@ -237,6 +240,94 @@ class NullSafetyTest {
 
         // Then
         assertThat(filtered).containsExactly("A", "B", "C")
+    }
+
+    // endregion
+
+    // region Safe Cast Operator (as?)
+
+    @Test
+    fun safeCastOperator() {
+        // Given
+        val anyString: Any = "Hello"
+        val anyInt: Any = 42
+
+        // When - as? returns null instead of throwing ClassCastException
+        val successfulCast: String? = anyString as? String
+        val failedCast: String? = anyInt as? String
+
+        // Then
+        assertThat(successfulCast).isEqualTo("Hello")
+        assertThat(failedCast).isNull()
+    }
+
+    // endregion
+
+    // region lateinit Modifier
+    //
+    // `lateinit` allows declaring a non-null var without immediate initialization.
+    // The compiler trusts you to initialize it before first use.
+    //
+    // Key points:
+    // - Avoids making the property nullable just because it's initialized later
+    // - Accessing before initialization throws UninitializedPropertyAccessException
+    // - Can check with `::property.isInitialized`
+    // - Only for var (not val), non-primitive, non-nullable types
+    //
+    // Common use cases:
+    // - Android views initialized in onCreate()
+    // - Dependency injection
+    // - Test fixtures in @Before methods
+
+    @Test
+    fun lateinitModifier() {
+        // Given - a class with lateinit property (common in Android for views)
+        class Controller {
+            lateinit var name: String
+
+            fun isNameInitialized(): Boolean = ::name.isInitialized
+        }
+
+        val controller = Controller()
+
+        // When - before initialization
+        val beforeInit = controller.isNameInitialized()
+
+        // Then - lateinit var is not yet initialized
+        assertThat(beforeInit).isFalse()
+
+        // When - after initialization
+        controller.name = "MyController"
+        val afterInit = controller.isNameInitialized()
+
+        // Then - now it's initialized and can be used
+        assertThat(afterInit).isTrue()
+        assertThat(controller.name).isEqualTo("MyController")
+    }
+
+    // endregion
+
+    // region Null-Safe String Checks
+
+    @Test
+    fun isNullOrEmptyAndIsNullOrBlank() {
+        // Given
+        val nullString: String? = null
+        val emptyString: String? = ""
+        val blankString: String? = "   "
+        val normalString: String? = "Hello"
+
+        // When/Then - isNullOrEmpty checks for null or empty string
+        assertThat(nullString.isNullOrEmpty()).isTrue()
+        assertThat(emptyString.isNullOrEmpty()).isTrue()
+        assertThat(blankString.isNullOrEmpty()).isFalse()  // whitespace is not empty
+        assertThat(normalString.isNullOrEmpty()).isFalse()
+
+        // When/Then - isNullOrBlank also considers whitespace-only as blank
+        assertThat(nullString.isNullOrBlank()).isTrue()
+        assertThat(emptyString.isNullOrBlank()).isTrue()
+        assertThat(blankString.isNullOrBlank()).isTrue()   // whitespace IS blank
+        assertThat(normalString.isNullOrBlank()).isFalse()
     }
 
     // endregion
