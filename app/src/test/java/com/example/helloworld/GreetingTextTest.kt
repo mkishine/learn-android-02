@@ -1,6 +1,6 @@
 package com.example.helloworld
 
-import org.junit.Assert.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 /**
@@ -12,30 +12,30 @@ class GreetingTextTest {
     @Test
     fun greetingText_withName_returnsCorrectGreeting() {
         val result = greetingText("World")
-        assertEquals("Hello World!", result)
+        assertThat(result).isEqualTo("Hello World!")
     }
 
     @Test
     fun greetingText_withDifferentName_returnsCorrectGreeting() {
         val result = greetingText("Android")
-        assertEquals("Hello Android!", result)
+        assertThat(result).isEqualTo("Hello Android!")
     }
 
     @Test
     fun greetingText_withEmptyName_returnsGreetingWithEmptyName() {
         val result = greetingText("")
-        assertEquals("Hello !", result)
+        assertThat(result).isEqualTo("Hello !")
     }
 
     @Test
     fun greetingText_withSpecialCharacters_handlesCorrectly() {
         val result = greetingText("User123")
-        assertEquals("Hello User123!", result)
+        assertThat(result).isEqualTo("Hello User123!")
     }
 
     @Test
     fun greetingText_withSpaces_handlesCorrectly() {
         val result = greetingText("John Doe")
-        assertEquals("Hello John Doe!", result)
+        assertThat(result).isEqualTo("Hello John Doe!")
     }
 }
