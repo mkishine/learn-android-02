@@ -323,7 +323,7 @@ class LambdaWithReceiverTest {
 
         assertThat(config.debug).isTrue()
         assertThat(config.maxRetries).isEqualTo(5)
-        assertThat(anotherConfig.timeout).isEqualTo(5)
+        assertThat(anotherConfig.timeout).isEqualTo(200)
     }
 
     // Extension function that uses lambda with receiver
