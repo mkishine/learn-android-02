@@ -1,8 +1,7 @@
 package com.example.sandbox
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertThrows
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
 
 /**
@@ -28,12 +27,15 @@ import org.junit.Test
  * | `nullableCollectionElements`         | Collections can contain nullable elements         |
  * | `filterNotNullOnCollections`         | `filterNotNull()` removes nulls from collections  |
  */
+@Suppress("RedundantNullableReturnType", "KotlinConstantConditions", "RedundantExplicitType",
+    "IfThenToElvis"
+)
 class NullSafetyTest {
 
     // region Nullable vs Non-Nullable Types
 
     @Test
-    fun `nullableVsNonNullableTypes`() {
+    fun nullableVsNonNullableTypes() {
         // Non-nullable type - cannot hold null
         val nonNullable: String = "Hello"
 
@@ -41,9 +43,9 @@ class NullSafetyTest {
         val nullable: String? = null
         val nullableWithValue: String? = "World"
 
-        assertEquals("Hello", nonNullable)
-        assertNull(nullable)
-        assertEquals("World", nullableWithValue)
+        assertThat(nonNullable).isEqualTo("Hello")
+        assertThat(nullable).isNull()
+        assertThat(nullableWithValue).isEqualTo("World")
     }
 
     // endregion
@@ -51,7 +53,7 @@ class NullSafetyTest {
     // region Safe Call Operator (?.)
 
     @Test
-    fun `safeCallOperator`() {
+    fun safeCallOperator() {
         // Given
         val nullString: String? = null
         val nonNullString: String? = "Hello"
@@ -61,12 +63,12 @@ class NullSafetyTest {
         val nonNullLength: Int? = nonNullString?.length
 
         // Then
-        assertNull(nullLength)
-        assertEquals(5, nonNullLength)
+        assertThat(nullLength).isNull()
+        assertThat(nonNullLength).isEqualTo(5)
     }
 
     @Test
-    fun `safeCallChaining`() {
+    fun safeCallChaining() {
         // Given
         data class Address(val city: String?)
         data class Person(val address: Address?)
@@ -81,9 +83,9 @@ class NullSafetyTest {
         val city3 = personWithNullAddress?.address?.city?.uppercase()
 
         // Then - entire chain returns null if any part is null
-        assertEquals("NEW YORK", city1)
-        assertNull(city2)
-        assertNull(city3)
+        assertThat(city1).isEqualTo("NEW YORK")
+        assertThat(city2).isNull()
+        assertThat(city3).isNull()
     }
 
     // endregion
@@ -91,7 +93,7 @@ class NullSafetyTest {
     // region Elvis Operator (?:)
 
     @Test
-    fun `elvisOperatorProvidesDefault`() {
+    fun elvisOperatorProvidesDefault() {
         // Given
         val nullValue: String? = null
         val nonNullValue: String? = "Hello"
@@ -101,19 +103,19 @@ class NullSafetyTest {
         val result2 = nonNullValue ?: "Default"
 
         // Then
-        assertEquals("Default", result1)
-        assertEquals("Hello", result2)
+        assertThat(result1).isEqualTo("Default")
+        assertThat(result2).isEqualTo("Hello")
     }
 
     @Test
-    fun `elvisOperatorWithThrow`() {
+    fun elvisOperatorWithThrow() {
         // Given
         val nullValue: String? = null
 
         // When/Then - Elvis can throw exception as default action
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThatThrownBy {
             nullValue ?: throw IllegalArgumentException("Value cannot be null")
-        }
+        }.isInstanceOf(IllegalArgumentException::class.java)
     }
 
     // endregion
@@ -121,7 +123,7 @@ class NullSafetyTest {
     // region Not-Null Assertion (!!)
 
     @Test
-    fun `notNullAssertionSuccess`() {
+    fun notNullAssertionSuccess() {
         // Given
         val nullable: String? = "Hello"
 
@@ -129,19 +131,19 @@ class NullSafetyTest {
         val nonNull: String = nullable!!
 
         // Then
-        assertEquals("Hello", nonNull)
+        assertThat(nonNull).isEqualTo("Hello")
     }
 
     @Test
-    fun `notNullAssertionThrowsOnNull`() {
+    fun notNullAssertionThrowsOnNull() {
         // Given
         val nullable: String? = null
 
         // When/Then - !! throws NullPointerException if value is null
-        assertThrows(NullPointerException::class.java) {
+        assertThatThrownBy {
             @Suppress("ALWAYS_NULL")
             nullable!!
-        }
+        }.isInstanceOf(NullPointerException::class.java)
     }
 
     // endregion
@@ -149,7 +151,7 @@ class NullSafetyTest {
     // region Smart Casts
 
     @Test
-    fun `smartCastAfterNullCheck`() {
+    fun smartCastAfterNullCheck() {
         // Given
         val nullable: String? = "Hello"
 
@@ -162,11 +164,11 @@ class NullSafetyTest {
         }
 
         // Then
-        assertEquals(5, result)
+        assertThat(result).isEqualTo(5)
     }
 
     @Test
-    fun `smartCastInWhenExpression`() {
+    fun smartCastInWhenExpression() {
         // Given
         val nullable: String? = "Kotlin"
 
@@ -178,7 +180,7 @@ class NullSafetyTest {
         }
 
         // Then
-        assertEquals("length: 6", result)
+        assertThat(result).isEqualTo("length: 6")
     }
 
     // endregion
@@ -186,7 +188,7 @@ class NullSafetyTest {
     // region Safe Call with let
 
     @Test
-    fun `letWithSafeCall`() {
+    fun letWithSafeCall() {
         // Given
         val nullValue: String? = null
         val nonNullValue: String? = "Hello"
@@ -202,8 +204,8 @@ class NullSafetyTest {
         }
 
         // Then
-        assertEquals(false, nullExecuted)
-        assertEquals(true, nonNullExecuted)
+        assertThat(nullExecuted).isFalse()
+        assertThat(nonNullExecuted).isTrue()
     }
 
     // endregion
@@ -211,7 +213,7 @@ class NullSafetyTest {
     // region Nullable Collections
 
     @Test
-    fun `nullableCollectionElements`() {
+    fun nullableCollectionElements() {
         // Given - list can contain nullable elements
         val listWithNulls: List<String?> = listOf("A", null, "B", null, "C")
 
@@ -220,12 +222,12 @@ class NullSafetyTest {
         val nonNullCount = listWithNulls.count { it != null }
 
         // Then
-        assertNull(firstNull)
-        assertEquals(3, nonNullCount)
+        assertThat(firstNull).isNull()
+        assertThat(nonNullCount).isEqualTo(3)
     }
 
     @Test
-    fun `filterNotNullOnCollections`() {
+    fun filterNotNullOnCollections() {
         // Given
         val listWithNulls: List<String?> = listOf("A", null, "B", null, "C")
 
@@ -233,7 +235,7 @@ class NullSafetyTest {
         val filtered: List<String> = listWithNulls.filterNotNull()
 
         // Then
-        assertEquals(listOf("A", "B", "C"), filtered)
+        assertThat(filtered).containsExactly("A", "B", "C")
     }
 
     // endregion
