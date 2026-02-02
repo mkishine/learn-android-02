@@ -10,6 +10,7 @@
 - Define helper functions and classes BELOW the code that uses them, not above
 
 ### Testing Style
+- Prefer AssertJ assertions over JUnit assertions
 - Use Given/When/Then comments in test methods when they contain more than a few lines
 - Example:
   ```kotlin
