@@ -96,6 +96,7 @@ class LambdaWithReceiverTest {
             // 'this' is the Person instance
             name = "Bob"      // same as: this.name = "Bob"
             age = 30
+            @Suppress("UnusedExpression")
             "this string is ignored"  // lambda's last expression is discarded
         }
 
