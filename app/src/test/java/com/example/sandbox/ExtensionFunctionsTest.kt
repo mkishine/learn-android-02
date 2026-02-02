@@ -25,6 +25,9 @@ import org.junit.Test
  * | `extensionFunctionScope`                 | Extensions can access public members of receiver        |
  * | `chainedExtensionFunctions`              | Building fluent APIs with extension functions           |
  */
+@Suppress("RedundantNullableReturnType", "SameReturnValue", "SameParameterValue",
+    "UnusedReceiverParameter"
+)
 class ExtensionFunctionsTest {
 
     // region Basic Extension Functions
@@ -163,7 +166,7 @@ class ExtensionFunctionsTest {
         assertThat(result).isEqualTo("Parent")
 
         // Contrast: if we declare as Child
-        val child: Child = Child()
+        val child = Child()
         assertThat(child.getType()).isEqualTo("Child")
     }
 
@@ -233,7 +236,7 @@ class ExtensionFunctionsTest {
 
     // region Extension Function Definitions (defined below the code that uses them)
 
-    private fun String.addExclamation(): String = this + "!"
+    private fun String.addExclamation(): String = "$this!"
 
     private fun String.repeat(times: Int, separator: String): String =
         (1..times).joinToString(separator) { this }
@@ -281,7 +284,7 @@ class ExtensionFunctionsTest {
     private fun Child.getType(): String = "Child"
 
     // This extension would be ignored because SampleClass has a member with same signature
-    @Suppress("unused")
+    @Suppress("unused", "EXTENSION_SHADOWED_BY_MEMBER")
     private fun SampleClass.describe(): String = "Extension"
 
     // endregion
