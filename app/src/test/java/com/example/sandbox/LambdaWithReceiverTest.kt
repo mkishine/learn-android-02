@@ -86,42 +86,69 @@ class LambdaWithReceiverTest {
         // apply signature: inline fun <T> T.apply(block: T.() -> Unit): T
         // - Called ON an object
         // - 'this' inside lambda is that object
-        // - Returns the object itself (useful for chaining/configuration)
+        // - RETURN VALUE: Always returns the receiver object itself (ignores lambda result)
+        //   This makes apply ideal for object configuration and builder patterns.
 
         data class Person(var name: String = "", var age: Int = 0)
 
-        val person = Person().apply {
+        val original = Person()
+        val person = original.apply {
             // 'this' is the Person instance
             name = "Bob"      // same as: this.name = "Bob"
             age = 30
+            "this string is ignored"  // lambda's last expression is discarded
         }
 
         assertThat(person.name).isEqualTo("Bob")
         assertThat(person.age).isEqualTo(30)
+        // apply returns the same object instance, not the lambda result
+        assertThat(person).isSameAs(original)
     }
 
     @Test
     fun `with - operate on an object without repeating its name`() {
         // with signature: inline fun <T, R> with(receiver: T, block: T.() -> R): R
         // - Takes receiver as first argument (not called ON it)
-        // - Returns whatever the lambda returns
+        // - RETURN VALUE: Returns the lambda's last expression (type R)
+        //   Unlike apply, the receiver is NOT returned - you get the lambda result.
 
+        // Given
         data class Person(val name: String, val age: Int)
         val person = Person("Alice", 25)
 
+        // When
         val description = with(person) {
             // 'this' is person
             "Name: $name, Age: $age"  // last expression is returned
         }
 
+        // Then
         assertThat(description).isEqualTo("Name: Alice, Age: 25")
+        // with returns the lambda result (String), not the receiver (Person)
+        assertThat(description).isInstanceOf(String::class.java)
+    }
+
+    @Test
+    fun `with - returns computed value from lambda`() {
+        // Given
+        data class Person(val name: String, val age: Int)
+        val person = Person("Alice", 25)
+
+        // When - returning a computed Boolean value
+        val isAdult = with(person) {
+            age >= 18  // returns Boolean, not Person
+        }
+
+        // Then
+        assertThat(isAdult).isTrue()
     }
 
     @Test
     fun `run - like 'with' but called on the object`() {
         // run signature: inline fun <T, R> T.run(block: T.() -> R): R
         // - Called ON an object
-        // - Returns whatever the lambda returns
+        // - RETURN VALUE: Returns the lambda's last expression (type R), just like 'with'
+        //   The difference from apply: run returns the lambda result, apply returns the receiver.
         // - Useful when you need null-safety: obj?.run { ... }
 
         data class Person(val name: String, val age: Int)
@@ -132,6 +159,15 @@ class LambdaWithReceiverTest {
         }
 
         assertThat(description).isEqualTo("Name: Charlie, Age: 35")
+        // run returns the lambda result (String), not the receiver (Person)
+        assertThat(description).isInstanceOf(String::class.java)
+
+        // Contrast with apply: if we used apply here, we'd get Person back
+        val fromApply = person.apply { "Name: $name" }
+        assertThat(fromApply).isSameAs(person)  // apply returns the receiver
+
+        val fromRun = person.run { "Name: $name" }
+        assertThat(fromRun).isEqualTo("Name: Charlie")  // run returns the lambda result
     }
 
     // =========================================================================
@@ -274,14 +310,19 @@ class LambdaWithReceiverTest {
     @Test
     fun `extension function with lambda receiver`() {
         data class Config(var debug: Boolean = false, var maxRetries: Int = 3)
+        data class AnotherConfig(var timeout: Int = 1000)
 
         val config = Config().configure {
             debug = true
             maxRetries = 5
         }
+        val anotherConfig = AnotherConfig().configure {
+            timeout = 200
+        }
 
         assertThat(config.debug).isTrue()
         assertThat(config.maxRetries).isEqualTo(5)
+        assertThat(anotherConfig.timeout).isEqualTo(5)
     }
 
     // Extension function that uses lambda with receiver
