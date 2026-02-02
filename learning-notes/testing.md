@@ -16,6 +16,35 @@ Run with:
 JAVA_HOME=/opt/android-studio/jbr ./gradlew test
 ```
 
+To see which tests are executed, add `--info` or use `--console=plain`:
+
+```bash
+JAVA_HOME=/opt/android-studio/jbr ./gradlew test --info
+```
+
+For permanent verbose test output, add to `build.gradle.kts`:
+
+```kotlin
+tasks.withType<Test> {
+    testLogging {
+        events("passed", "skipped", "failed", "started")
+    }
+}
+```
+
+To run a specific test method or class:
+
+```bash
+# Single test method
+./gradlew test --tests "com.example.sandbox.MyTest.myMethod"
+
+# All tests in a class
+./gradlew test --tests "com.example.sandbox.MyTest"
+
+# All tests in a package
+./gradlew test --tests "com.example.sandbox.*"
+```
+
 Example:
 
 ```kotlin
