@@ -6,6 +6,9 @@
 
 ## Coding Preferences
 
+### Code Organization
+- Define helper functions and classes BELOW the code that uses them, not above
+
 ### Testing Style
 - Use Given/When/Then comments in test methods when they contain more than a few lines
 - Example:

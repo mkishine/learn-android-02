@@ -44,22 +44,6 @@ class LambdaWithReceiverTest {
     // PART 2: Comparing Regular Lambda vs Lambda with Receiver
     // =========================================================================
 
-    // Regular higher-order function (Java-style approach)
-    // The lambda receives StringBuilder as a PARAMETER
-    private fun buildStringJavaStyle(block: (StringBuilder) -> Unit): String {
-        val sb = StringBuilder()
-        block(sb)  // pass sb as an argument to the lambda
-        return sb.toString()
-    }
-
-    // DSL-style with lambda with receiver
-    // The lambda has StringBuilder as its RECEIVER (like 'this')
-    private fun buildStringDslStyle(block: StringBuilder.() -> Unit): String {
-        val sb = StringBuilder()
-        sb.block()  // call the lambda ON sb (sb becomes 'this' inside)
-        return sb.toString()
-    }
-
     @Test
     fun `compare Java-style vs DSL-style`() {
         // Java-style: must name the parameter and use it explicitly
@@ -75,6 +59,22 @@ class LambdaWithReceiverTest {
         }
 
         assertThat(text1).isEqualTo(text2)
+    }
+
+    // Regular higher-order function (Java-style approach)
+    // The lambda receives StringBuilder as a PARAMETER
+    private fun buildStringJavaStyle(block: (StringBuilder) -> Unit): String {
+        val sb = StringBuilder()
+        block(sb)  // pass sb as an argument to the lambda
+        return sb.toString()
+    }
+
+    // DSL-style with lambda with receiver
+    // The lambda has StringBuilder as its RECEIVER (like 'this')
+    private fun buildStringDslStyle(block: StringBuilder.() -> Unit): String {
+        val sb = StringBuilder()
+        sb.block()  // call the lambda ON sb (sb becomes 'this' inside)
+        return sb.toString()
     }
 
     // =========================================================================
@@ -138,7 +138,38 @@ class LambdaWithReceiverTest {
     // PART 4: Building a Simple DSL
     // =========================================================================
 
-    // Step 1: Create builder classes that hold state
+    @Test
+    fun `custom DSL for building a person`() {
+        // Given - a DSL that reads almost like a data structure
+
+        // When
+        val alice = person {
+            // 'this' is PersonBuilder
+            name = "Alice"
+            age = 30
+
+            // Nested DSL - 'this' becomes AddressBuilder inside
+            address {
+                street = "123 Main St"
+                city = "Springfield"
+            }
+        }
+
+        // Then
+        assertThat(alice.name).isEqualTo("Alice")
+        assertThat(alice.age).isEqualTo(30)
+        assertThat(alice.address?.street).isEqualTo("123 Main St")
+        assertThat(alice.address?.city).isEqualTo("Springfield")
+    }
+
+    // DSL entry function
+    private fun person(block: PersonBuilder.() -> Unit): PersonWithAddress {
+        val builder = PersonBuilder()
+        builder.block()
+        return builder.build()
+    }
+
+    // Builder classes that hold state
     class PersonBuilder {
         var name: String = ""
         var age: Int = 0
@@ -166,43 +197,35 @@ class LambdaWithReceiverTest {
     data class Address(val street: String, val city: String)
     data class PersonWithAddress(val name: String, val age: Int, val address: Address?)
 
-    // Step 2: Create a top-level DSL entry function
-    private fun person(block: PersonBuilder.() -> Unit): PersonWithAddress {
-        val builder = PersonBuilder()
-        builder.block()
-        return builder.build()
-    }
-
-    @Test
-    fun `custom DSL for building a person`() {
-        // Given - a DSL that reads almost like a data structure
-
-        // When
-        val alice = person {
-            // 'this' is PersonBuilder
-            name = "Alice"
-            age = 30
-
-            // Nested DSL - 'this' becomes AddressBuilder inside
-            address {
-                street = "123 Main St"
-                city = "Springfield"
-            }
-        }
-
-        // Then
-        assertThat(alice.name).isEqualTo("Alice")
-        assertThat(alice.age).isEqualTo(30)
-        assertThat(alice.address?.street).isEqualTo("123 Main St")
-        assertThat(alice.address?.city).isEqualTo("Springfield")
-    }
-
     // =========================================================================
     // PART 5: @DslMarker - Preventing Scope Leakage
     // =========================================================================
 
     // Problem: In nested lambdas, you can accidentally access outer receivers.
     // @DslMarker creates a "scope boundary" - you must be explicit to access outer scope.
+
+    @Test
+    fun `HTML DSL with DslMarker`() {
+        val result = html {
+            body {
+                p("Hello")
+                div {
+                    p("Nested paragraph")
+                    // body { } // <-- This would NOT compile thanks to @DslMarker!
+                    //            // It prevents accidentally calling outer scope methods.
+                    //            // You'd have to write: this@html.body { } to be explicit.
+                }
+            }
+        }
+
+        assertThat(result).isEqualTo("<body><p>Hello</p><div><p>Nested paragraph</p></div></body>")
+    }
+
+    private fun html(block: HtmlBuilder.() -> Unit): String {
+        val builder = HtmlBuilder()
+        builder.block()
+        return builder.build()
+    }
 
     @DslMarker
     annotation class HtmlDsl  // Custom marker annotation
@@ -244,38 +267,9 @@ class LambdaWithReceiverTest {
         fun build(): String = content.toString()
     }
 
-    private fun html(block: HtmlBuilder.() -> Unit): String {
-        val builder = HtmlBuilder()
-        builder.block()
-        return builder.build()
-    }
-
-    @Test
-    fun `HTML DSL with DslMarker`() {
-        val result = html {
-            body {
-                p("Hello")
-                div {
-                    p("Nested paragraph")
-                    // body { } // <-- This would NOT compile thanks to @DslMarker!
-                    //            // It prevents accidentally calling outer scope methods.
-                    //            // You'd have to write: this@html.body { } to be explicit.
-                }
-            }
-        }
-
-        assertThat(result).isEqualTo("<body><p>Hello</p><div><p>Nested paragraph</p></div></body>")
-    }
-
     // =========================================================================
     // PART 6: Extension Functions + Lambda with Receiver = Powerful Combo
     // =========================================================================
-
-    // Extension function that uses lambda with receiver
-    private fun <T> T.configure(block: T.() -> Unit): T {
-        this.block()
-        return this
-    }
 
     @Test
     fun `extension function with lambda receiver`() {
@@ -288,5 +282,11 @@ class LambdaWithReceiverTest {
 
         assertThat(config.debug).isTrue()
         assertThat(config.maxRetries).isEqualTo(5)
+    }
+
+    // Extension function that uses lambda with receiver
+    private fun <T> T.configure(block: T.() -> Unit): T {
+        this.block()
+        return this
     }
 }
