@@ -18,6 +18,8 @@ import org.junit.Test
  * | `extensionFunctionWithParameters`        | Extension functions can take parameters                 |
  * | `extensionFunctionOnNullableType`        | Extensions on nullable types handle null safely         |
  * | `extensionProperty`                      | Adding computed properties to existing classes          |
+ * | `customSetterOnClassProperty`            | Custom setter with validation on a class property       |
+ * | `customSetterOnExtensionProperty`        | Extension property with setter using external storage   |
  * | `extensionFunctionWithGenerics`          | Generic extension functions                             |
  * | `memberFunctionTakesPrecedence`          | Member functions win over extensions with same name     |
  * | `extensionsAreResolvedStatically`        | Extensions use declared type, not runtime type          |
@@ -103,6 +105,54 @@ class ExtensionFunctionsTest {
         assertThat(lastChar).isEqualTo('n')
         assertThat(isPalindrome).isTrue()
         assertThat("hello".isPalindrome).isFalse()
+    }
+
+    @Test
+    fun customSetterOnClassProperty() {
+        // Custom setters allow validation or transformation before storing a value.
+        // The `field` keyword refers to the backing field.
+
+        // Given
+        val person = PersonWithAge()
+
+        // When - setting valid age
+        person.age = 25
+
+        // Then
+        assertThat(person.age).isEqualTo(25)
+
+        // When - attempting to set invalid (negative) age
+        person.age = -5
+
+        // Then - setter rejects negative value, age unchanged
+        assertThat(person.age).isEqualTo(25)
+    }
+
+    @Test
+    fun customSetterOnExtensionProperty() {
+        // Extension properties cannot have backing fields, so setters must use
+        // external storage (like a map) to persist values.
+
+        // Given - clear any previous state
+        stringTags.clear()
+        val key = "myKey"
+
+        // When - setting extension property
+        key.tag = 42
+
+        // Then
+        assertThat(key.tag).isEqualTo(42)
+
+        // When - updating the value
+        key.tag = 100
+
+        // Then
+        assertThat(key.tag).isEqualTo(100)
+
+        // Different strings have independent tags
+        "otherKey".tag = 7
+        assertThat(key.tag).isEqualTo(100)
+        assertThat("otherKey".tag).isEqualTo(7)
     }
 
     // endregion
@@ -249,6 +299,13 @@ class ExtensionFunctionsTest {
     private val String.isPalindrome: Boolean
         get() = this == this.reversed()
 
+    // External storage for extension property with setter
+    private val stringTags = mutableMapOf<String, Int>()
+
+    private var String.tag: Int
+        get() = stringTags[this] ?: 0
+        set(value) { stringTags[this] = value }
+
     private fun <T> List<T>.secondOrNull(): T? = if (size >= 2) this[1] else null
 
     private fun List<Int>.sumOfSquares(): Int = sumOf { it * it }
@@ -270,6 +327,13 @@ class ExtensionFunctionsTest {
     // region Helper Classes (defined below the code that uses them)
 
     data class Person(val name: String, val age: Int)
+
+    class PersonWithAge {
+        var age: Int = 0
+            set(value) {
+                if (value >= 0) field = value  // Only accept non-negative values
+            }
+    }
 
     class SampleClass(private val value: String) {
         // This member function takes precedence over any extension with same signature
