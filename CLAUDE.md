@@ -1,5 +1,9 @@
 # Project Notes
 
+## User Context
+
+- The user is an experienced Java programmer
+
 ## Coding Preferences
 
 ### Testing Style
@@ -21,6 +25,10 @@
 
 ### Testing Practice
 - After fixing a test class, run the test to verify it passes before considering the task complete
+
+### com.example.sandbox Test Classes
+- All test classes in this package should have a summary table in the KDoc comment at the top of the class
+- When adding new examples, update the summary table to keep it in sync
 
 ## Build and Run Commands
 
