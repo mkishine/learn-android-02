@@ -55,6 +55,7 @@ class NullSafetyTest {
     @Test
     fun safeCallOperator() {
         // Given
+        // Remember, Michael, '?' is attached to the String. '?' is not part of the variable name.
         val nullString: String? = null
         val nonNullString: String? = "Hello"
 
